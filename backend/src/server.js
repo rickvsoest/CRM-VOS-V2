@@ -13,6 +13,19 @@ const prisma = new PrismaClient();
 
 const PORT = process.env.PORT || 5000;
 const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
+const express = require("express");
+const cors = require("cors");
+
+const allowedOrigin = process.env.CORS_ORIGIN || "*";
+app.use(cors({ origin: allowedOrigin, credentials: true }));
+app.use(express.json());
+
+app.get("/health", (req, res) => {
+  res.json({ ok: true, env: process.env.NODE_ENV || "development" });
+});
+
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log(`API listening on :${port}`));
 
 app.use(cors({ origin: CORS_ORIGIN, credentials: true }));
 app.use(express.json({ limit: '2mb' }));
