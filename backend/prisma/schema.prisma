@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id          String   @id @default(cuid())
+  firstName   String
+  infix       String?  // tussenvoegsel
+  lastName    String
+  email       String   @unique
+  phone       String?
+  street      String?
+  houseNumber String?
+  postcode    String?
+  city        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  documents   Document[]
+}
+
+model Document {
+  id          String   @id @default(cuid())
+  customerId  String
+  originalName String
+  fileName     String
+  mimeType     String?
+  size         Int?
+  path         String
+  createdAt    DateTime @default(now())
+
+  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
