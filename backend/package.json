@@ -3,12 +3,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "nodemon src/server.js",
-    "build": "echo \"No build step for JS server\"",
-    "start": "node src/server.js",
+    "dev": "node src/server.mjs",          
+    "start": "prisma migrate deploy && node src/server.mjs",
+    "postinstall": "prisma generate",
+    "migrate:deploy": "prisma migrate deploy",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "seed": "node prisma/seed.cjs"
   },
   "dependencies": {
     "@prisma/client": "^6.17.1",
