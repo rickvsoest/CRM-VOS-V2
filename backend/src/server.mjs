@@ -2,7 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import authRouter from './routes/auth.js';
 import { PrismaClient } from '@prisma/client';
-
+import customersRouter from './routes/customers.js';
+import documentsRouter from './routes/documents.js';
+import invitesRouter from './routes/invites.js';
+import addressRouter from './routes/address.js';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -26,6 +29,10 @@ const corsOptions = {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+app.get('/health', (_req, res) => res.json({ ok: true, time: new Date().toISOString() }));
+app.get('/api/health', (_req, res) => res.json({ ok: true, time: new Date().toISOString() }));
+
 
 // ✅ CORS vóór routes
 app.use(cors(corsOptions));
@@ -60,6 +67,12 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`API listening on :${PORT}`);
 
+app.use('/api/auth', authRouter);
+app.use('/api/customers', customersRouter);
+app.use('/api/documents', documentsRouter);
+app.use('/api/invites', invitesRouter);
+app.use('/api/address', addressRouter);
+
   // Extra health check voor DB
 app.get('/health/db', async (_req, res) => {
   try {
@@ -70,5 +83,7 @@ app.get('/health/db', async (_req, res) => {
     res.status(500).json({ ok: false, error: 'db' });
   }
 });
+
+
 
 });
