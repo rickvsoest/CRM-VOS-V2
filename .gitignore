@@ -1,2 +1,12 @@
-frontend/
+# Monorepo ignore
+backend/node_modules/
+frontend/node_modules/
+**/dist/
+**/build/
+
+# Env & OS
 **/.env
+**/.env.*
+**/.DS_Store
+npm-debug.log*
+yarn-error.log*
