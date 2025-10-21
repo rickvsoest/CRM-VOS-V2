@@ -1,45 +1,87 @@
-export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+// frontend/src/lib/api.ts
+const API_BASE =
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) ||
+  'https://vos-crm-production.up.railway.app';
 
-const TOKEN_KEY = "auth_token";
-
+// --- Auth token helpers ---
 export function getToken() {
-  return localStorage.getItem(TOKEN_KEY);
+  try {
+    return localStorage.getItem('token') || '';
+  } catch {
+    return '';
+  }
 }
-export function setToken(token: string) {
-  localStorage.setItem(TOKEN_KEY, token);
+export function setToken(t: string) {
+  try {
+    localStorage.setItem('token', t);
+  } catch {}
 }
 export function clearToken() {
-  localStorage.removeItem(TOKEN_KEY);
+  try {
+    localStorage.removeItem('token');
+  } catch {}
 }
 
-export async function apiFetch(path: string, options: RequestInit = {}) {
-  const headers = new Headers(options.headers || {});
-  headers.set("Content-Type", "application/json");
+type Query = Record<string, string | number | boolean | undefined | null>;
+function toQuery(params: Query = {}) {
+  const usp = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v === undefined || v === null) return;
+    usp.set(k, String(v));
+  });
+  const s = usp.toString();
+  return s ? `?${s}` : '';
+}
 
+export async function apiFetch<T = any>(path: string, init?: RequestInit): Promise<T> {
   const token = getToken();
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
-  }
-
-  const res = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers,
-    // zet op true als je met cookies werkt i.p.v. headers:
-    // credentials: "include",
+  const res = await fetch(`${API_BASE}${path}`, {
+    credentials: 'include', // voor cookie-based auth (als je dat later gebruikt)
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(init?.headers || {}),
+    },
   });
 
-  if (res.status === 401) {
-    // token ongeldig of verlopen
-    clearToken();
-    // optioneel: redirect naar login
-    // window.location.href = "/";
-  }
-
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`${res.status} ${res.statusText} ${text}`.trim());
+    // gooi 401 door als speciale Error
+    const msg = await res.text().catch(() => res.statusText);
+    const err = new Error(msg || `HTTP ${res.status}`);
+    // @ts-ignore
+    err.status = res.status;
+    throw err;
   }
 
-  const ct = res.headers.get("content-type") || "";
-  return ct.includes("application/json") ? res.json() : res.text();
+  const ct = res.headers.get('content-type') || '';
+  if (!ct.includes('application/json')) {
+    return res as any;
+  }
+  return res.json();
+}
+
+// Customers
+export interface Customer {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  createdAt?: string;
+}
+export interface CustomersResponse {
+  items: Customer[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+export function getApiBase() { return API_BASE; }
+export function buildCustomersQuery(params: {
+  q?: string; page?: number; pageSize?: number; sort?: string; order?: 'asc'|'desc';
+}) { return toQuery(params); }
+export async function getCustomers(params: {
+  q?: string; page?: number; pageSize?: number; sort?: string; order?: 'asc'|'desc';
+}) {
+  const qs = buildCustomersQuery(params);
+  return apiFetch<CustomersResponse>(`/customers${qs}`);
 }
