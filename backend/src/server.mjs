@@ -3,54 +3,48 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 
-// ... je andere imports (routers) ...
+// import je routers...
+// import authRouter from './routes/auth.js';
+// import customersRouter from './routes/customers.js';
+// import documentsRouter from './routes/documents.js';
+// import addressRouter from './routes/address.js';
 
 const app = express();
 
-// ✅ CORS: kies dynamisch één geldige origin
+// ✅ Toegestane origins uit env (kommagescheiden)
 const allowed = (process.env.CORS_ORIGIN || '')
   .split(',')
   .map(s => s.trim())
-  .filter(Boolean); // bv: ["https://vos-crm-v2.netlify.app"]
+  .filter(Boolean);
 
-app.use((req, res, next) => {
-  // Preflight: laat cors middleware het regelen
-  next();
-});
-
-app.use(cors({
+// ✅ Dynamische CORS (géén '*' wildcard routes gebruiken in Express v5)
+const corsOptions = {
   origin(origin, cb) {
-    // allow same-origin / server-to-server (no Origin)
-    if (!origin) return cb(null, true);
+    if (!origin) return cb(null, true);               // server-to-server / curl
     if (allowed.includes(origin)) return cb(null, true);
     return cb(new Error(`CORS blocked for origin: ${origin}`));
   },
   credentials: true,
-}));
+};
 
-// Extra: preflight expliciet beantwoorden
-app.options('*', cors({
-  origin(origin, cb) {
-    if (!origin) return cb(null, true);
-    if (allowed.includes(origin)) return cb(null, true);
-    return cb(new Error('CORS blocked'));
-  },
-  credentials: true,
-}));
+// Gebruik één cors-middleware vroeg in de pipeline
+app.use(cors(corsOptions));
+
+// ⚠️ Verwijder deze regel als je ‘m nog had:
+// app.options('*', cors(corsOptions));  // ❌ NIET in Express v5
 
 app.use(express.json({ limit: '2mb' }));
 app.use(morgan('dev'));
 
-// health
 app.get('/health', (req, res) => {
   res.json({ ok: true, env: process.env.NODE_ENV || 'development', allowed });
 });
 
-// 🔗 je routers
+// Routers
 // app.use('/auth', authRouter);
 // app.use('/customers', customersRouter);
 // app.use('/documents', documentsRouter);
 // app.use('/address', addressRouter);
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`API :${port}`));
+app.listen(port, () => console.log(`API listening on :${port}`));
