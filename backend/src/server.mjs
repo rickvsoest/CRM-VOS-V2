@@ -1,20 +1,27 @@
-// C:\Dev\Project-CRM-v2\backend\src\server.mjs
-import express from "express";
-import cors from "cors";
+// backend/src/server.mjs
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import morgan from 'morgan';
+
+import customersRouter from './routes/customers.js';
+import documentsRouter from './routes/documents.js';
+import addressRouter from './routes/address.js';
 
 const app = express();
 
-// 🔐 Zet dit in Railway als env: CORS_ORIGIN = https://<jouw-netlify-site>.netlify.app
-const allowedOrigin = process.env.CORS_ORIGIN || "*";
+const allowedOrigin = process.env.CORS_ORIGIN || '*';
 app.use(cors({ origin: allowedOrigin, credentials: true }));
-app.use(express.json());
+app.use(express.json({ limit: '2mb' }));
+app.use(morgan('dev'));
 
-// Healthcheck (open, voor test)
-app.get("/health", (req, res) => {
-  res.json({ ok: true, env: process.env.NODE_ENV || "development" });
+app.get('/health', (req, res) => {
+  res.json({ ok: true, env: process.env.NODE_ENV || 'development' });
 });
 
-// ... jouw routes hier ...
+app.use('/customers', customersRouter);
+app.use('/documents', documentsRouter);
+app.use('/address', addressRouter);
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
