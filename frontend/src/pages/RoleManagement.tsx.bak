@@ -1,0 +1,343 @@
+import { useState } from 'react';
+import { Plus, Edit, Trash2, Shield } from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
+import { Checkbox } from '../components/ui/checkbox';
+import { Label } from '../components/ui/label';
+import { Input } from '../components/ui/input';
+
+interface Permission {
+  id: string;
+  label: string;
+  description: string;
+}
+
+interface Role {
+  id: string;
+  name: string;
+  description: string;
+  permissions: string[];
+}
+
+const AVAILABLE_PERMISSIONS: Permission[] = [
+  { id: 'dashboard', label: 'Dashboard', description: 'Toegang tot overzichtspagina met statistieken' },
+  { id: 'pipeline', label: 'Pipeline', description: 'Bekijken en beheren van verkooppipeline' },
+  { id: 'klanten', label: 'Klanten', description: 'Bekijken en beheren van klantgegevens' },
+  { id: 'taken', label: 'Taken', description: 'Aanmaken en beheren van taken' },
+  { id: 'notities', label: 'Notities', description: 'Toevoegen en bekijken van notities' },
+  { id: 'documenten', label: 'Documenten', description: 'Uploaden en bekijken van documenten' },
+  { id: 'documenten_download', label: 'Documenten downloaden', description: 'Downloaden van documenten' },
+  { id: 'rollenbeheer', label: 'Rollenbeheer', description: 'Beheren van rollen en rechten' },
+  { id: 'instellingen', label: 'Instellingen', description: 'Toegang tot systeeminstellingen' },
+];
+
+const INITIAL_ROLES: Role[] = [
+  {
+    id: '1',
+    name: 'Beheerder',
+    description: 'Volledige toegang tot alle functies',
+    permissions: AVAILABLE_PERMISSIONS.map((p) => p.id),
+  },
+  {
+    id: '2',
+    name: 'Medewerker',
+    description: 'Toegang tot klantbeheer en dagelijkse taken',
+    permissions: ['pipeline', 'klanten', 'taken', 'notities', 'documenten'],
+  },
+  {
+    id: '3',
+    name: 'Klant',
+    description: 'Alleen toegang tot eigen documenten',
+    permissions: ['documenten'],
+  },
+];
+
+export function RoleManagement() {
+  const [roles, setRoles] = useState<Role[]>(INITIAL_ROLES);
+  const [editingRole, setEditingRole] = useState<Role | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleSaveRole = () => {
+    if (editingRole) {
+      const isNew = !editingRole.id;
+      if (editingRole.id) {
+        setRoles(roles.map((r) => (r.id === editingRole.id ? editingRole : r)));
+      } else {
+        setRoles([...roles, { ...editingRole, id: Date.now().toString() }]);
+      }
+      setIsModalOpen(false);
+      setEditingRole(null);
+      import('sonner@2.0.3').then(({ toast }) => {
+        toast.success(isNew ? 'Rol aangemaakt!' : 'Rol bijgewerkt!', {
+          description: isNew ? 'De nieuwe rol is toegevoegd.' : 'De rol is succesvol bijgewerkt.',
+        });
+      });
+    }
+  };
+
+  const handleDeleteRole = (id: string) => {
+    if (confirm('Weet je zeker dat je deze rol wilt verwijderen?')) {
+      setRoles(roles.filter((r) => r.id !== id));
+      import('sonner@2.0.3').then(({ toast }) => {
+        toast.success('Rol verwijderd!');
+      });
+    }
+  };
+
+  const handleNewRole = () => {
+    setEditingRole({
+      id: '',
+      name: '',
+      description: '',
+      permissions: [],
+    });
+    setIsModalOpen(true);
+  };
+
+  const togglePermission = (permissionId: string) => {
+    if (!editingRole) return;
+    const hasPermission = editingRole.permissions.includes(permissionId);
+    setEditingRole({
+      ...editingRole,
+      permissions: hasPermission
+        ? editingRole.permissions.filter((p) => p !== permissionId)
+        : [...editingRole.permissions, permissionId],
+    });
+  };
+
+  return (
+    <div className="p-8 space-y-6">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="mb-2">Rollen en rechten</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>
+            Beheer gebruikersrollen en bepaal welke functionaliteiten toegankelijk zijn
+          </p>
+        </div>
+        <Button
+          onClick={handleNewRole}
+          className="rounded-xl hover:scale-105 transition-transform"
+          style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Nieuwe rol toevoegen
+        </Button>
+      </div>
+
+      {/* Roles Table */}
+      <div
+        className="rounded-xl shadow-sm overflow-hidden"
+        style={{ backgroundColor: 'var(--panel)' }}
+      >
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead style={{ backgroundColor: 'var(--background)' }}>
+              <tr>
+                <th className="px-6 py-4 text-left" style={{ color: 'var(--text-secondary)' }}>
+                  Rol
+                </th>
+                <th className="px-6 py-4 text-left" style={{ color: 'var(--text-secondary)' }}>
+                  Beschrijving
+                </th>
+                <th className="px-6 py-4 text-left" style={{ color: 'var(--text-secondary)' }}>
+                  Rechten
+                </th>
+                <th className="px-6 py-4 text-left" style={{ color: 'var(--text-secondary)' }}>
+                  Acties
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {roles.map((role) => (
+                <tr
+                  key={role.id}
+                  className="border-t"
+                  style={{ borderColor: 'var(--border)' }}
+                >
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-4 w-4" style={{ color: 'var(--accent)' }} />
+                      <span style={{ color: 'var(--text-primary)' }}>{role.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4" style={{ color: 'var(--text-secondary)' }}>
+                    {role.description}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex flex-wrap gap-2">
+                      {role.permissions.slice(0, 3).map((permId) => {
+                        const perm = AVAILABLE_PERMISSIONS.find((p) => p.id === permId);
+                        return perm ? (
+                          <Badge
+                            key={permId}
+                            variant="secondary"
+                            className="rounded-full"
+                            style={{
+                              backgroundColor: 'var(--accent)' + '20',
+                              color: 'var(--accent)',
+                            }}
+                          >
+                            {perm.label}
+                          </Badge>
+                        ) : null;
+                      })}
+                      {role.permissions.length > 3 && (
+                        <Badge
+                          variant="secondary"
+                          className="rounded-full"
+                          style={{
+                            backgroundColor: 'var(--text-secondary)' + '20',
+                            color: 'var(--text-secondary)',
+                          }}
+                        >
+                          +{role.permissions.length - 3} meer
+                        </Badge>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          setEditingRole(role);
+                          setIsModalOpen(true);
+                        }}
+                        className="p-2 rounded-lg hover:scale-110 transition-transform"
+                        style={{ color: 'var(--accent)' }}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteRole(role.id)}
+                        className="p-2 rounded-lg hover:scale-110 transition-transform"
+                        style={{ color: 'var(--error)' }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Info Box */}
+      <div
+        className="p-6 rounded-xl"
+        style={{ backgroundColor: 'var(--panel)' }}
+      >
+        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+          💡 <strong>Tip:</strong> Beheerders hebben standaard volledige toegang tot alle functies.
+          Medewerkers kunnen klanten en taken beheren, maar hebben geen toegang tot het rollenbeheer.
+          Klanten hebben alleen toegang tot hun eigen documenten en kunnen alleen uploaden.
+        </p>
+      </div>
+
+      {/* Edit Role Modal */}
+      {isModalOpen && editingRole && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-30 backdrop-blur-sm">
+          <div
+            className="w-full max-w-2xl rounded-xl shadow-lg max-h-[90vh] overflow-y-auto"
+            style={{ backgroundColor: 'var(--panel)' }}
+          >
+            {/* Header */}
+            <div
+              className="p-6 border-b sticky top-0 z-10"
+              style={{
+                backgroundColor: 'var(--panel)',
+                borderColor: 'var(--border)',
+              }}
+            >
+              <h2>{editingRole.id ? 'Rol bewerken' : 'Nieuwe rol'}</h2>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="roleName">Rolnaam *</Label>
+                <Input
+                  id="roleName"
+                  value={editingRole.name}
+                  onChange={(e) =>
+                    setEditingRole({ ...editingRole, name: e.target.value })
+                  }
+                  placeholder="bijv. Verkoper"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="roleDescription">Beschrijving</Label>
+                <Input
+                  id="roleDescription"
+                  value={editingRole.description}
+                  onChange={(e) =>
+                    setEditingRole({ ...editingRole, description: e.target.value })
+                  }
+                  placeholder="Korte omschrijving van de rol"
+                />
+              </div>
+
+              <div className="space-y-4">
+                <Label>Rechten</Label>
+                <div
+                  className="p-4 rounded-xl space-y-4"
+                  style={{ backgroundColor: 'var(--background)' }}
+                >
+                  {AVAILABLE_PERMISSIONS.map((permission) => (
+                    <div key={permission.id} className="flex items-start gap-3">
+                      <Checkbox
+                        id={permission.id}
+                        checked={editingRole.permissions.includes(permission.id)}
+                        onCheckedChange={() => togglePermission(permission.id)}
+                      />
+                      <div className="flex-1">
+                        <label
+                          htmlFor={permission.id}
+                          className="cursor-pointer"
+                          style={{ color: 'var(--text-primary)' }}
+                        >
+                          {permission.label}
+                        </label>
+                        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                          {permission.description}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div
+              className="p-6 border-t flex justify-end gap-3"
+              style={{ borderColor: 'var(--border)' }}
+            >
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setEditingRole(null);
+                }}
+                className="rounded-xl"
+              >
+                Annuleren
+              </Button>
+              <Button
+                onClick={handleSaveRole}
+                disabled={!editingRole.name.trim()}
+                className="rounded-xl"
+                style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}
+              >
+                Opslaan
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
