@@ -8,7 +8,6 @@ import { Register } from "./pages/Register";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { Dashboard } from "./pages/Dashboard";
 import { Pipeline } from "./pages/Pipeline";
-import { Customers } from "./pages/Customers";
 import { CustomerDetail } from "./pages/CustomerDetail";
 import { Documents } from "./pages/Documents";
 import { Tasks } from "./pages/Tasks";
@@ -27,6 +26,7 @@ import {
   defaultPipelineStages,
 } from "./lib/mockData";
 import { Toaster } from "./components/ui/sonner";
+import Customers from "./pages/Customers";
 
 type Page =
   | "login"
