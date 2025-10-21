@@ -36,3 +36,13 @@ model Document {
 
   customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 }
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  role         String   @default("medewerker")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
