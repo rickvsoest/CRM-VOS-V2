@@ -6,6 +6,12 @@ import { Input } from "../components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 
+export interface CustomersProps {
+  onNavigate?: (page: string, id?: string) => void;
+  onOpenNewCustomer?: () => void;
+  onAddToPipeline?: (customer: { id: string; firstName?: string; lastName?: string; companyName?: string }) => void;
+}
+
 type Order = "asc" | "desc";
 
 interface DataState {
@@ -15,8 +21,8 @@ interface DataState {
   pageSize: number;
 }
 
-export default function Customers() {
-  // 🔎 Filters & state
+export default function Customers(props: CustomersProps) {
+  const { onNavigate, onOpenNewCustomer, onAddToPipeline } = props;
   const [q, setQ] = useState<string>("");
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);

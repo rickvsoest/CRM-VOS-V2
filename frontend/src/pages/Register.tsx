@@ -4,6 +4,7 @@ import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import { Card } from '../components/ui/card';
+import { setToken as saveJwt } from "../lib/api";
 
 interface RegisterProps {
   onNavigate: (page: string) => void;
@@ -13,6 +14,8 @@ interface RegisterProps {
 export function Register({ onNavigate, inviteToken }: RegisterProps) {
   const [step, setStep] = useState<'validating' | 'details' | 'authenticator' | 'invalid'>('validating');
   const [inviteData, setInviteData] = useState<{ email: string; name: string; role: string } | null>(null);
+  const [token, setToken] = useState<string>('');
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -22,47 +25,55 @@ export function Register({ onNavigate, inviteToken }: RegisterProps) {
   const [verificationCode, setVerificationCode] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Validate invite token on mount
+  // ✅ Invite token valideren via backend (props of URL)
   useEffect(() => {
-    const validateToken = async () => {
-      if (!inviteToken) {
+    const run = async () => {
+      // haal token uit prop of URL
+      const urlToken = new URLSearchParams(window.location.search).get("token") || "";
+      const t = inviteToken || urlToken;
+      if (!t) {
         setStep('invalid');
         return;
       }
+      setToken(t);
 
-      // Mock token validation - in productie zou dit een API call zijn
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      try {
+        setStep('validating');
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/invites/validate?token=${encodeURIComponent(t)}`);
+        if (!res.ok) {
+          setStep('invalid');
+          return;
+        }
+        const data = await res.json(); // verwacht { email, role }
+        const nameFromEmail = (data.email || "").split("@")[0] || "Nieuwe gebruiker";
+        const role = data.role || "KLANT";
 
-      // Simuleer een geldige invite
-      const mockInviteData = {
-        email: 'nieuwe.medewerker@vansoest.nl',
-        name: 'Nieuwe Medewerker',
-        role: 'MEDEWERKER',
-      };
-
-      setInviteData(mockInviteData);
-      setFormData({
-        name: mockInviteData.name,
-        email: mockInviteData.email,
-        password: '',
-        confirmPassword: '',
-      });
-      setStep('details');
+        setInviteData({ email: data.email, role, name: nameFromEmail });
+        setFormData({
+          name: nameFromEmail,  // zoals je UI had (readonly)
+          email: data.email,
+          password: '',
+          confirmPassword: '',
+        });
+        setStep('details');
+      } catch {
+        setStep('invalid');
+      }
     };
-
-    validateToken();
+    run();
   }, [inviteToken]);
 
-  // Mock QR code URL - in productie zou dit een echte QR code genereren
-  const qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/VOS%20CRM:' + encodeURIComponent(formData.email) + '?secret=JBSWY3DPEHPK3PXP&issuer=VOS%20CRM';
+  // Mock QR (UI behoud) – 2FA is nog niet gekoppeld aan backend
+  const qrCodeUrl =
+    'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/VOS%20CRM:' +
+    encodeURIComponent(formData.email) +
+    '?secret=JBSWY3DPEHPK3PXP&issuer=VOS%20CRM';
   const secretKey = 'JBSWY3DPEHPK3PXP';
 
   const validateDetails = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Naam is verplicht';
-    }
+    if (!formData.name.trim()) newErrors.name = 'Naam is verplicht';
 
     if (!formData.email.trim()) {
       newErrors.email = 'E-mailadres is verplicht';
@@ -89,32 +100,66 @@ export function Register({ onNavigate, inviteToken }: RegisterProps) {
   const handleDetailsSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateDetails()) {
+      // UI flow behouden: eerst authenticator stap tonen
       setStep('authenticator');
     }
   };
 
-  const handleAuthenticatorSubmit = (e: React.FormEvent) => {
+  // ✅ Account echt aanmaken via backend
+  const handleAuthenticatorSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (verificationCode.length !== 6) {
       setErrors({ code: 'Voer een geldige 6-cijferige code in' });
       return;
     }
 
-    // Mock verificatie - in productie zou dit de code valideren
-    import('sonner').then(({ toast }) => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token,              // invite token
+          name: formData.name,
+          password: formData.password
+          // 2FA-code kan hier later meegegeven worden als je backend dat gaat checken
+        }),
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const msg = await res.text().catch(() => "");
+        throw new Error(msg || "Registreren mislukt");
+      }
+
+      const data = await res.json(); // verwacht { token, user }
+      if (data?.token) {
+        // Je kunt ervoor kiezen om direct in te loggen:
+        // saveJwt(data.token);
+      }
+
+      const { toast } = await import('sonner');
       toast.success('Account succesvol aangemaakt!', {
         description: 'Je kunt nu inloggen met je gegevens.',
       });
-    });
-    
-    // Navigeer naar login
-    setTimeout(() => {
-      onNavigate('login');
-    }, 1500);
+
+      // naar login (jouw originele flow)
+      setTimeout(() => {
+        onNavigate('login');
+      }, 1000);
+    } catch (err: any) {
+      const { toast } = await import('sonner');
+      toast.error('Registreren mislukt', {
+        description: err?.message || 'Er ging iets mis bij het aanmaken van je account.',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Show loading state while validating
+  // === UI (ongewijzigd, behalve dat step/validatie nu echt zijn) ===
+
   if (step === 'validating') {
     return (
       <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: 'var(--background)' }}>
@@ -126,7 +171,6 @@ export function Register({ onNavigate, inviteToken }: RegisterProps) {
     );
   }
 
-  // Show invalid token state
   if (step === 'invalid') {
     return (
       <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: 'var(--background)' }}>
@@ -249,7 +293,7 @@ export function Register({ onNavigate, inviteToken }: RegisterProps) {
                   <Input
                     id="password"
                     type="password"
-                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                    placeholder="••••••••"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     className="pl-10"
@@ -269,7 +313,7 @@ export function Register({ onNavigate, inviteToken }: RegisterProps) {
                   <Input
                     id="confirmPassword"
                     type="password"
-                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                    placeholder="••••••••"
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                     className="pl-10"
@@ -295,6 +339,7 @@ export function Register({ onNavigate, inviteToken }: RegisterProps) {
                 onClick={() => setStep('details')}
                 className="flex items-center gap-2 text-sm hover:underline"
                 style={{ color: 'var(--accent)' }}
+                disabled={loading}
               >
                 <ArrowLeft className="h-4 w-4" />
                 Terug
@@ -351,6 +396,7 @@ export function Register({ onNavigate, inviteToken }: RegisterProps) {
                         onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                         className="pl-10 text-center tracking-widest"
                         maxLength={6}
+                        disabled={loading}
                       />
                     </div>
                     {errors.code && <p className="text-sm mt-2" style={{ color: 'var(--error)' }}>{errors.code}</p>}
@@ -362,10 +408,10 @@ export function Register({ onNavigate, inviteToken }: RegisterProps) {
                 type="submit"
                 className="w-full rounded-xl"
                 style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}
-                disabled={verificationCode.length !== 6}
+                disabled={verificationCode.length !== 6 || loading}
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
-                Account aanmaken
+                {loading ? "Account aanmaken…" : "Account aanmaken"}
               </Button>
             </form>
           )}
@@ -378,11 +424,10 @@ export function Register({ onNavigate, inviteToken }: RegisterProps) {
             className="text-sm hover:underline"
             style={{ color: 'var(--accent)' }}
           >
-            â† Terug naar inloggen
+            ← Terug naar inloggen
           </button>
         </div>
       </div>
     </div>
   );
 }
-

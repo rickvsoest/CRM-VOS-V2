@@ -14,9 +14,16 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "verbatimModuleSyntax": false,
+    "compilerOptions": {
+    // …jouw bestaande opties…
+      "baseUrl": ".",
+      "paths": {
+        "@/*": ["src/*"]
 
     // Vite/TS types
     "types": ["vite/client"]
   },
+  
   "include": ["src"]
+
 }
