@@ -1,32 +1,56 @@
-// backend/src/server.mjs
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
-import authRouter from './routes/auth.js';
 
-
-import customersRouter from './routes/customers.js';
-import documentsRouter from './routes/documents.js';
-import addressRouter from './routes/address.js';
+// ... je andere imports (routers) ...
 
 const app = express();
 
-const allowedOrigin = process.env.CORS_ORIGIN || '*';
-app.use(cors({ origin: allowedOrigin, credentials: true }));
+// ✅ CORS: kies dynamisch één geldige origin
+const allowed = (process.env.CORS_ORIGIN || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean); // bv: ["https://vos-crm-v2.netlify.app"]
+
+app.use((req, res, next) => {
+  // Preflight: laat cors middleware het regelen
+  next();
+});
+
+app.use(cors({
+  origin(origin, cb) {
+    // allow same-origin / server-to-server (no Origin)
+    if (!origin) return cb(null, true);
+    if (allowed.includes(origin)) return cb(null, true);
+    return cb(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  credentials: true,
+}));
+
+// Extra: preflight expliciet beantwoorden
+app.options('*', cors({
+  origin(origin, cb) {
+    if (!origin) return cb(null, true);
+    if (allowed.includes(origin)) return cb(null, true);
+    return cb(new Error('CORS blocked'));
+  },
+  credentials: true,
+}));
+
 app.use(express.json({ limit: '2mb' }));
 app.use(morgan('dev'));
-app.use('/auth', authRouter);
 
+// health
 app.get('/health', (req, res) => {
-  res.json({ ok: true, env: process.env.NODE_ENV || 'development' });
+  res.json({ ok: true, env: process.env.NODE_ENV || 'development', allowed });
 });
 
-app.use('/customers', customersRouter);
-app.use('/documents', documentsRouter);
-app.use('/address', addressRouter);
+// 🔗 je routers
+// app.use('/auth', authRouter);
+// app.use('/customers', customersRouter);
+// app.use('/documents', documentsRouter);
+// app.use('/address', addressRouter);
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`API listening on :${port}`);
-});
+app.listen(port, () => console.log(`API :${port}`));
