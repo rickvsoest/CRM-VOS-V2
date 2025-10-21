@@ -1,8 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import authRouter from './routes/auth.js';
+import { PrismaClient } from '@prisma/client';
+
 
 const app = express();
+const prisma = new PrismaClient();
 
 const allowedOrigins = [
   'https://vos-crm-v2.netlify.app',
@@ -56,4 +59,16 @@ app.use((err, req, res, _next) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`API listening on :${PORT}`);
+
+  // Extra health check voor DB
+app.get('/health/db', async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('[health/db] error', e);
+    res.status(500).json({ ok: false, error: 'db' });
+  }
+});
+
 });
