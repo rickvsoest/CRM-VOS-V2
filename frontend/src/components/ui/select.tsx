@@ -67,7 +67,7 @@ function SelectContent({
         className={cn(
           // Layout & sizing
           "relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] overflow-x-hidden overflow-y-auto",
-          // ✅ Light + Dark mode
+          // ✅ Opaque + thematisch (light/dark)
           "rounded-md border border-neutral-200 bg-white text-neutral-800 shadow-lg backdrop-blur-none",
           "dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100",
           // Animaties/positie
@@ -84,7 +84,7 @@ function SelectContent({
         <SelectScrollUpButton />
         <SelectPrimitive.Viewport
           className={cn(
-            // Binnenzijde ook thematisch correct
+            // Binnenzijde ook thematisch
             "p-1 bg-white dark:bg-neutral-900",
             position === "popper" &&
               "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1"
