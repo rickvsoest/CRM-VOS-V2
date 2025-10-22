@@ -14,8 +14,22 @@ export function Notes({ onNavigate }: NotesProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [isNewNoteModalOpen, setIsNewNoteModalOpen] = useState(false);
   const [isNoteDetailModalOpen, setIsNoteDetailModalOpen] = useState(false);
-  const [selectedNote, setSelectedNote] = useState<any>(null);
-  const [notes, setNotes] = useState(mockNotes);
+  const [selectedNote, setSelectedNote] = useState<NoteLite | null>(null);
+  const [notes, setNotes] = useState<NoteLite[]>(mockNotes as NoteLite[]);
+  
+  type NoteLite = {
+  id: string;
+  customerId?: string;
+  customer?: any; // kun je later strakker typen
+  content: string;
+  authorId: string;
+  authorName: string;
+  createdAt: string;
+};
+
+const getNoteCustomer = (note: { customer?: any; customerId?: string }) =>
+  note.customer ?? mockCustomers.find(c => c.id === note.customerId) ?? null;
+
 
   const handleNewNoteSave = (data: any) => {
     const currentUser = mockUsers[0]; // In real app, get from context
@@ -137,26 +151,26 @@ export function Notes({ onNavigate }: NotesProps) {
               {note.content}
             </p>
 
-            {note.customer && (
-              <div
-                className="pt-4 border-t"
-                style={{ borderColor: 'var(--border)' }}
-              >
-                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  Klant:
-                </p>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onNavigate('customer-detail', note.customer.id);
-                  }}
-                  className="hover:underline"
-                  style={{ color: 'var(--accent)' }}
-                >
-                  {getCustomerFullName(note.customer)}
-                </button>
-              </div>
-            )}
+            {(() => {
+  const customer = getNoteCustomer(note);
+  if (!customer) return null;
+  return (
+    <div className="pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
+      <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Klant:</p>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onNavigate('customer-detail', customer.id);
+        }}
+        className="hover:underline"
+        style={{ color: 'var(--accent)' }}
+      >
+        {getCustomerFullName(customer)}
+      </button>
+    </div>
+  );
+})()}
+
           </div>
         ))}
       </div>
@@ -187,11 +201,13 @@ export function Notes({ onNavigate }: NotesProps) {
           }}
           note={selectedNote}
           onNavigateToCustomer={() => {
-            setIsNoteDetailModalOpen(false);
-            if (selectedNote.customer) {
-              onNavigate('customer-detail', selectedNote.customerId);
-            }
-          }}
+  setIsNoteDetailModalOpen(false);
+  const customer = getNoteCustomer(selectedNote);
+  if (customer) {
+    onNavigate('customer-detail', customer.id);
+  }
+}}
+
         />
       )}
     </div>

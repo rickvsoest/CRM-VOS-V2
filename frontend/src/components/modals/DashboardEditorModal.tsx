@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { X, Plus, GripVertical, Trash2, Save } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
@@ -256,11 +256,15 @@ function KPIItem({ kpi, index, onRemove, moveKPI }: KPIItemProps) {
     }),
   });
 
+  // ✅ maak de ref en compose drag & drop
+  const ref = useRef<HTMLDivElement>(null);
+  drag(drop(ref));
+
   const kpiType = availableKPITypes.find((k) => k.value === kpi.type);
 
   return (
     <div
-      ref={(node) => drag(drop(node))}
+      ref={ref}
       className="flex items-center gap-3 p-4 rounded-xl cursor-move transition-all"
       style={{
         backgroundColor: isOver ? 'var(--accent)' + '20' : 'var(--background)',
