@@ -22,8 +22,25 @@ export function Tasks({ onNavigate }: TasksProps) {
   const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
   const [isTaskDetailModalOpen, setIsTaskDetailModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<any>(null);
+
+  type TaskLite = {
+  id: string;
+  title: string;
+  notes?: string;
+  status: TaskStatus;
+  deadline?: string;
+  customerId?: string;
+  customer?: any;   // later: Customer
+  assignedTo?: string;
+  assignee?: any;   // later: User
+  createdAt: string;
+};
+
   const [selectedTask, setSelectedTask] = useState<any>(null);
   const [tasks, setTasks] = useState(mockTasks);
+  const getTaskCustomer = (task: { customer?: any; customerId?: string }) =>
+    task.customer ?? mockCustomers.find(c => c.id === task.customerId) ?? null;
+ 
 
   // Register global callback for adding tasks
   React.useEffect(() => {
@@ -92,24 +109,25 @@ export function Tasks({ onNavigate }: TasksProps) {
   }));
 
   const filteredTasks = tasksWithDetails.filter((task) => {
-    const matchesSearch =
-      task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (task.customer && getCustomerFullName(task.customer).toLowerCase().includes(searchTerm.toLowerCase()));
+  const customer = getTaskCustomer(task); // <— hier declareren
 
-    let matchesStatus = true;
-    if (filterStatus === 'all') {
-      matchesStatus = true;
-    } else if (filterStatus === 'OPENSTAAND') {
-      // Openstaand = alle taken behalve Afgerond en Geannuleerd
-      matchesStatus = task.status !== 'DONE' && task.status !== 'CANCELED';
-    } else {
-      matchesStatus = task.status === filterStatus;
-    }
-    
-    const matchesAssignee = filterAssignee === 'all' || task.assignedTo === filterAssignee;
+  const matchesSearch =
+    task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (customer && getCustomerFullName(customer).toLowerCase().includes(searchTerm.toLowerCase()));
 
-    return matchesSearch && matchesStatus && matchesAssignee;
-  });
+  let matchesStatus = true;
+  if (filterStatus === 'all') {
+    matchesStatus = true;
+  } else if (filterStatus === 'OPENSTAAND') {
+    matchesStatus = task.status !== 'DONE' && task.status !== 'CANCELED';
+  } else {
+    matchesStatus = task.status === filterStatus;
+  }
+
+  const matchesAssignee = filterAssignee === 'all' || task.assignedTo === filterAssignee;
+
+  return matchesSearch && matchesStatus && matchesAssignee;
+});
 
   const getStatusIcon = (status: TaskStatus) => {
     switch (status) {
@@ -265,21 +283,24 @@ export function Tasks({ onNavigate }: TasksProps) {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    {task.customer ? (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onNavigate('customer-detail', task.customer.id);
-                        }}
-                        className="hover:underline"
-                        style={{ color: 'var(--accent)' }}
-                      >
-                        {getCustomerFullName(task.customer)}
-                      </button>
-                    ) : (
-                      <span style={{ color: 'var(--text-secondary)' }}>Onbekend</span>
-                    )}
-                  </td>
+  {(() => {
+    const customer = getTaskCustomer(task);
+    if (!customer) return <span style={{ color: 'var(--text-secondary)' }}>Onbekend</span>;
+    return (
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onNavigate('customer-detail', customer.id);
+        }}
+        className="hover:underline"
+        style={{ color: 'var(--accent)' }}
+      >
+        {getCustomerFullName(customer)}
+      </button>
+    );
+  })()}
+</td>
+
                   <td className="px-6 py-4">
                     <Badge
                       variant="secondary"
@@ -363,11 +384,13 @@ export function Tasks({ onNavigate }: TasksProps) {
           task={selectedTask}
           onEdit={() => handleEditTask(selectedTask)}
           onNavigateToCustomer={() => {
-            setIsTaskDetailModalOpen(false);
-            if (selectedTask.customer) {
-              onNavigate('customer-detail', selectedTask.customerId);
-            }
-          }}
+  setIsTaskDetailModalOpen(false);
+  const customer = getTaskCustomer(selectedTask);
+  if (customer) {
+    onNavigate('customer-detail', customer.id);
+  }
+}}
+
         />
       )}
     </div>
