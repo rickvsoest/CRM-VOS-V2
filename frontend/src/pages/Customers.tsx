@@ -1,14 +1,16 @@
 ﻿// frontend/src/pages/Customers.tsx
 import { useEffect, useMemo, useState } from "react";
-import { getApiBase, getCustomers, type Customer } from "../lib/api";
+import { getApiBase, getCustomers, type Customer, createCustomer } from "../lib/api";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import { Plus } from "lucide-react";
+import { NewCustomerModal } from "../components/modals/NewCustomerModal";
 
 export interface CustomersProps {
   onNavigate?: (page: string, id?: string) => void;
-  onOpenNewCustomer?: () => void;
+  // onOpenNewCustomer?: () => void;  // verwijderd: we gebruiken lokale handler
   onAddToPipeline?: (customer: { id: string; firstName?: string; lastName?: string; companyName?: string }) => void;
 }
 
@@ -22,12 +24,20 @@ interface DataState {
 }
 
 export default function Customers(props: CustomersProps) {
-  const { onNavigate, onOpenNewCustomer, onAddToPipeline } = props;
+  const { onNavigate, onAddToPipeline } = props;
+
   const [q, setQ] = useState<string>("");
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
   const [sort, setSort] = useState<string>("createdAt");
   const [order, setOrder] = useState<Order>("desc");
+
+  // Nieuw: state voor modal + refresh
+  const [showNewCustomer, setShowNewCustomer] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const onOpenNewCustomer = () => setShowNewCustomer(true);
+  const onCloseNewCustomer = () => setShowNewCustomer(false);
 
   // 📦 Data
   const [data, setData] = useState<DataState>({
@@ -48,7 +58,6 @@ export default function Customers(props: CustomersProps) {
       try {
         const res = await getCustomers({ q, page, pageSize, sort, order });
         if (!cancelled) {
-          // backend moet {items,total,page,pageSize} teruggeven
           setData({
             items: res.items ?? [],
             total: res.total ?? 0,
@@ -68,7 +77,7 @@ export default function Customers(props: CustomersProps) {
     return () => {
       cancelled = true;
     };
-  }, [q, page, pageSize, sort, order]);
+  }, [q, page, pageSize, sort, order, refreshKey]); // ← refreshKey toegevoegd
 
   const totalPages = useMemo(() => {
     if (!data.total || !data.pageSize) return 1;
@@ -76,13 +85,11 @@ export default function Customers(props: CustomersProps) {
   }, [data.total, data.pageSize]);
 
   function onExportCsv() {
-    // Simpele export: nieuwe tab naar /customers/export met dezelfde filters
     const base = getApiBase();
     const qs = new URLSearchParams();
     if (q) qs.set("q", q);
     if (sort) qs.set("sort", sort);
     if (order) qs.set("order", order);
-    // optioneel: je kunt page/pageSize meesturen of juist alles exporteren
     const url = `${base}/customers/export?${qs.toString()}`;
     window.open(url, "_blank");
   }
@@ -99,15 +106,43 @@ export default function Customers(props: CustomersProps) {
   const sortLabel = (col: string) =>
     sort === col ? (order === "asc" ? " ↑" : " ↓") : "";
 
+  // Handler voor opslaan vanuit modal
+  const handleSaveNewCustomer = async (form: any) => {
+    const isOrg = form?.type === "ORGANIZATION";
+    const firstName = isOrg ? (form.companyName || "").trim() : (form.firstName || "").trim();
+    const lastName  = isOrg ? (form.companyName || "Organisatie").trim() : (form.lastName || "").trim();
+    const email     = (form.email || "").trim();
+
+    if (!firstName || !lastName || !email) {
+      alert("Voornaam/Bedrijfsnaam, Achternaam en E-mail zijn verplicht.");
+      return;
+    }
+
+    await createCustomer({
+      firstName,
+      infix: isOrg ? undefined : (form.middleName || "").trim() || undefined,
+      lastName,
+      email,
+      phone: (form.phone || "").trim() || undefined,
+      street: (form.street || "").trim() || undefined,
+      houseNumber: (form.houseNumber || "").trim() || undefined,
+      postcode: (form.postalCode || "").trim() || undefined,
+      city: (form.city || "").trim() || undefined,
+    });
+
+    setShowNewCustomer(false);
+    setRefreshKey((k) => k + 1);
+  };
+
   return (
     <div className="p-4 md:p-6 space-y-4">
-      {/* Header met zoek + export (compact) */}
+      {/* Header met zoek + export + nieuwe klant */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div className="flex items-center gap-2 w-full md:max-w-md">
           <Input
             value={q}
             onChange={(e) => {
-              setPage(1); // reset naar pagina 1 bij nieuwe zoekterm
+              setPage(1);
               setQ(e.target.value);
             }}
             placeholder="Zoek klantnaam, e-mail, telefoon…"
@@ -116,7 +151,17 @@ export default function Customers(props: CustomersProps) {
             Reset
           </Button>
         </div>
+
         <div className="flex items-center gap-2">
+          <Button
+            onClick={onOpenNewCustomer}
+            className="rounded-xl hover:scale-105 transition-transform"
+            style={{ backgroundColor: 'var(--accent)', color: '#FFFFFF' }}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nieuwe klant
+          </Button>
+
           <Button variant="outline" onClick={onExportCsv}>
             Export CSV
           </Button>
@@ -166,9 +211,7 @@ export default function Customers(props: CustomersProps) {
                   <TableCell>{c.email || "-"}</TableCell>
                   <TableCell>{c.phone || "-"}</TableCell>
                   <TableCell>
-                    {c.createdAt
-                      ? new Date(c.createdAt).toLocaleDateString()
-                      : "-"}
+                    {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "-"}
                   </TableCell>
                 </TableRow>
               ))
@@ -219,6 +262,13 @@ export default function Customers(props: CustomersProps) {
           Pagina {data.page} / {totalPages} · Totaal {data.total}
         </div>
       </div>
+
+      {/* Modal voor nieuwe klant */}
+      <NewCustomerModal
+        isOpen={showNewCustomer}
+        onClose={onCloseNewCustomer}
+        onSave={handleSaveNewCustomer}
+      />
     </div>
   );
 }

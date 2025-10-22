@@ -46,7 +46,6 @@ export async function apiFetch<T = any>(path: string, init?: RequestInit): Promi
   });
 
   if (!res.ok) {
-    // gooi 401 door als speciale Error
     const msg = await res.text().catch(() => res.statusText);
     const err = new Error(msg || `HTTP ${res.status}`);
     // @ts-ignore
@@ -61,7 +60,7 @@ export async function apiFetch<T = any>(path: string, init?: RequestInit): Promi
   return res.json();
 }
 
-// Customers
+// ---------------- Customers ----------------
 export interface Customer {
   id: string;
   name: string;
@@ -69,19 +68,44 @@ export interface Customer {
   phone?: string;
   createdAt?: string;
 }
+
 export interface CustomersResponse {
   items: Customer[];
   total: number;
   page: number;
   pageSize: number;
 }
-export function getApiBase() { return API_BASE; }
+
+export function getApiBase() {
+  return API_BASE;
+}
+
 export function buildCustomersQuery(params: {
   q?: string; page?: number; pageSize?: number; sort?: string; order?: 'asc'|'desc';
-}) { return toQuery(params); }
+}) {
+  return toQuery(params);
+}
+
 export async function getCustomers(params: {
   q?: string; page?: number; pageSize?: number; sort?: string; order?: 'asc'|'desc';
 }) {
   const qs = buildCustomersQuery(params);
   return apiFetch<CustomersResponse>(`/customers${qs}`);
+}
+
+export async function createCustomer(payload: {
+  firstName: string;
+  infix?: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  street?: string;
+  houseNumber?: string;
+  postcode?: string;
+  city?: string;
+}) {
+  return apiFetch(`/customers`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
 }
