@@ -323,13 +323,57 @@ export default function Customers({
         </div>
 
         {/* Tabs met aantallen */}
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ActiveTab)}>
-          <TabsList className="rounded-xl">
-            <TabsTrigger value="all" className="rounded-xl">Alle ({counts.all})</TabsTrigger>
-            <TabsTrigger value="organizations" className="rounded-xl">Organisaties ({counts.org})</TabsTrigger>
-            <TabsTrigger value="persons" className="rounded-xl">Particulieren ({counts.per})</TabsTrigger>
-          </TabsList>
+{/* Tabs */}
+<Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ActiveTab)}>
+  <TabsList className="flex w-full gap-2 rounded-xl p-1 bg-transparent">
+    {/* Alle */}
+    <TabsTrigger
+      value="all"
+      className="
+        rounded-xl px-4 py-2 text-sm transition
+        border border-neutral-200 bg-white text-neutral-700 shadow-sm
+        hover:bg-neutral-50 hover:shadow
+        data-[state=active]:bg-[var(--accent)] data-[state=active]:text-white data-[state=active]:border-[var(--accent)]
+        data-[state=active]:shadow
+        dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800
+        dark:data-[state=active]:bg-[var(--accent)] dark:data-[state=active]:text-white dark:data-[state=active]:border-[var(--accent)]
+      "
+    >
+      Alle ({counts.all})
+    </TabsTrigger>
 
+    {/* Organisaties */}
+    <TabsTrigger
+      value="organizations"
+      className="
+        rounded-xl px-4 py-2 text-sm transition
+        border border-neutral-200 bg-white text-neutral-700 shadow-sm
+        hover:bg-neutral-50 hover:shadow
+        data-[state=active]:bg-[var(--accent)] data-[state=active]:text-white data-[state=active]:border-[var(--accent)]
+        data-[state=active]:shadow
+        dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800
+        dark:data-[state=active]:bg-[var(--accent)] dark:data-[state=active]:text-white dark:data-[state=active]:border-[var(--accent)]
+      "
+    >
+      Organisaties ({counts.org})
+    </TabsTrigger>
+
+    {/* Particulieren */}
+    <TabsTrigger
+      value="persons"
+      className="
+        rounded-xl px-4 py-2 text-sm transition
+        border border-neutral-200 bg-white text-neutral-700 shadow-sm
+        hover:bg-neutral-50 hover:shadow
+        data-[state=active]:bg-[var(--accent)] data-[state=active]:text-white data-[state=active]:border-[var(--accent)]
+        data-[state=active]:shadow
+        dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800
+        dark:data-[state=active]:bg-[var(--accent)] dark:data-[state=active]:text-white dark:data-[state=active]:border-[var(--accent)]
+      "
+    >
+      Particulieren ({counts.per})
+    </TabsTrigger>
+  </TabsList>
           <TabsContent value={activeTab} className="mt-4">
             {/* Filters + CSV */}
             <div className="flex flex-col gap-3">
