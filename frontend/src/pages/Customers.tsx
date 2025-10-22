@@ -7,7 +7,6 @@ import {
   Download,
   Mail,
   TrendingUp,
-  Eye,
   Pencil,
   Trash2,
 } from "lucide-react";
@@ -106,7 +105,7 @@ function mapApiToUi(c: ApiCustomer): UICustomer {
     NEGOTIATING: "Onderhandeling",
     CLOSED: "Afgerond",
     BLOCKED: "Geblokkeerd",
-    // NL keys (mocht backend NL sturen)
+    // NL keys fallback
     "CONTACT GELEGD": "Contact gelegd",
     "OFFERTE GESTUURD": "Offerte gestuurd",
     "IN BEWERKING": "Onderhandeling",
@@ -173,19 +172,19 @@ function getTypeStyles(t: UICustomerType) {
 function getStatusStyles(s: UICustomerStatus) {
   switch (s) {
     case "Actief":
-      return { bg: "#E6FAF3", fg: "#10B981" }; // groen
+      return { bg: "#E6FAF3", fg: "#10B981" };
     case "Nieuw":
-      return { bg: "#E7F0FF", fg: "#2563EB" }; // blauw
+      return { bg: "#E7F0FF", fg: "#2563EB" };
     case "Contact gelegd":
-      return { bg: "#EEF2FF", fg: "#4F46E5" }; // indigo
+      return { bg: "#EEF2FF", fg: "#4F46E5" };
     case "Offerte gestuurd":
-      return { bg: "#F1F5FF", fg: "#1D4ED8" }; // deep blue
+      return { bg: "#F1F5FF", fg: "#1D4ED8" };
     case "Onderhandeling":
-      return { bg: "#FFF7ED", fg: "#F59E0B" }; // amber
+      return { bg: "#FFF7ED", fg: "#F59E0B" };
     case "Afgerond":
-      return { bg: "#ECFDF5", fg: "#059669" }; // emerald donker
+      return { bg: "#ECFDF5", fg: "#059669" };
     case "Geblokkeerd":
-      return { bg: "#FEF2F2", fg: "#EF4444" }; // rood
+      return { bg: "#FEF2F2", fg: "#EF4444" };
     default:
       return { bg: "#E5E7EB", fg: "#111827" };
   }
@@ -207,7 +206,7 @@ export default function Customers({
   const [order, setOrder] = useState<Order>("desc");
   const [activeTab, setActiveTab] = useState<ActiveTab>("all");
 
-  // Extra selects (zoals screenshot)
+  // Extra selects
   const [filterCity, setFilterCity] = useState("all");
   const [filterType, setFilterType] = useState<"all" | "person" | "org">("all");
   const [filterStatus, setFilterStatus] = useState<"all" | UICustomerStatus>("all");
@@ -263,15 +262,13 @@ export default function Customers({
     return { all, org, per };
   }, [data.items]);
 
-  // Client filters (tab + selects)
+  // Client filters
   const filteredItems = useMemo(() => {
     let list = data.items;
 
-    // tab
     if (activeTab === "organizations") list = list.filter((c) => c.uiType === "Organisatie");
     if (activeTab === "persons") list = list.filter((c) => c.uiType === "Persoon");
 
-    // selects
     if (filterCity !== "all") list = list.filter((c) => (c.city || "").toLowerCase() === filterCity.toLowerCase());
     if (filterType === "person") list = list.filter((c) => c.uiType === "Persoon");
     if (filterType === "org") list = list.filter((c) => c.uiType === "Organisatie");
@@ -328,15 +325,9 @@ export default function Customers({
         {/* Tabs met aantallen */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ActiveTab)}>
           <TabsList className="rounded-xl">
-            <TabsTrigger value="all" className="rounded-xl">
-              Alle ({counts.all})
-            </TabsTrigger>
-            <TabsTrigger value="organizations" className="rounded-xl">
-              Organisaties ({counts.org})
-            </TabsTrigger>
-            <TabsTrigger value="persons" className="rounded-xl">
-              Particulieren ({counts.per})
-            </TabsTrigger>
+            <TabsTrigger value="all" className="rounded-xl">Alle ({counts.all})</TabsTrigger>
+            <TabsTrigger value="organizations" className="rounded-xl">Organisaties ({counts.org})</TabsTrigger>
+            <TabsTrigger value="persons" className="rounded-xl">Particulieren ({counts.per})</TabsTrigger>
           </TabsList>
 
           <TabsContent value={activeTab} className="mt-4">
@@ -435,27 +426,34 @@ export default function Customers({
                       const name = c.uiType === "Organisatie" ? c.companyName || "(Onbekend bedrijf)" : getFullName(c);
 
                       return (
-                        <TableRow key={c.id} className="hover:bg-muted/50">
-                          <TableCell className="font-medium">
-                            <button
-                              onClick={() => onNavigate?.("customerDetail", c.id)}
-                              className="text-blue-600 hover:text-blue-700 hover:underline underline-offset-2"
-                              title="Bekijk klant"
-                            >
-                              {name}
-                            </button>
+                        <TableRow
+                          key={c.id}
+                          className="hover:bg-muted/50 cursor-pointer"
+                          onClick={() => onNavigate?.("customerDetail", c.id)}
+                        >
+                          {/* Naam: zwart, niet vet */}
+                          <TableCell className="text-[14.5px] text-neutral-900">
+                            {name}
                           </TableCell>
+
+                          {/* E-mail: blauw */}
                           <TableCell>
                             {c.email ? (
-                              <a href={`mailto:${c.email}`} className="underline underline-offset-2">
+                              <a
+                                href={`mailto:${c.email}`}
+                                className="text-blue-600 hover:text-blue-700 underline underline-offset-2"
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 {c.email}
                               </a>
                             ) : (
                               "-"
                             )}
                           </TableCell>
+
                           <TableCell>{c.phone || "-"}</TableCell>
                           <TableCell>{c.city || "-"}</TableCell>
+
                           <TableCell>
                             <Badge
                               variant="secondary"
@@ -465,6 +463,7 @@ export default function Customers({
                               {c.uiType}
                             </Badge>
                           </TableCell>
+
                           <TableCell>
                             <Badge
                               className="rounded-full"
@@ -473,24 +472,22 @@ export default function Customers({
                               {c.uiStatus}
                             </Badge>
                           </TableCell>
-                          <TableCell>{fmtDate(c.createdAt)}</TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-1.5">
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" title="Bekijken" onClick={() => onNavigate?.("customerDetail", c.id)}>
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Bekijken</TooltipContent>
-                              </Tooltip>
 
+                          <TableCell>{fmtDate(c.createdAt)}</TableCell>
+
+                          <TableCell className="text-right">
+                            <div
+                              className="flex items-center justify-end gap-1.5"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {/* Uitnodigen (blauw) */}
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <Button
                                     variant="ghost"
                                     size="icon"
                                     title="Uitnodigen"
+                                    className="hover:bg-transparent focus-visible:ring-0 text-blue-600 hover:text-blue-700 transition-transform hover:scale-110"
                                     onClick={() => {
                                       setSelectedCustomer(c);
                                       setInviteOpen(true);
@@ -502,12 +499,14 @@ export default function Customers({
                                 <TooltipContent>Uitnodigen</TooltipContent>
                               </Tooltip>
 
+                              {/* Pipeline (groen) */}
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <Button
                                     variant="ghost"
                                     size="icon"
                                     title="Toevoegen aan pipeline"
+                                    className="hover:bg-transparent focus-visible:ring-0 text-green-600 hover:text-green-700 transition-transform hover:scale-110"
                                     onClick={() => onAddToPipeline?.(c)}
                                   >
                                     <TrendingUp className="h-4 w-4" />
@@ -516,21 +515,30 @@ export default function Customers({
                                 <TooltipContent>Toevoegen aan pipeline</TooltipContent>
                               </Tooltip>
 
+                              {/* Bewerken (kleur laten zoals is) */}
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" title="Bewerken" onClick={() => onEditCustomer?.(c)}>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    title="Bewerken"
+                                    className="hover:bg-transparent focus-visible:ring-0 transition-transform hover:scale-110"
+                                    onClick={() => onEditCustomer?.(c)}
+                                  >
                                     <Pencil className="h-4 w-4" />
                                   </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>Bewerken</TooltipContent>
                               </Tooltip>
 
+                              {/* Verwijderen (rood) */}
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <Button
                                     variant="ghost"
                                     size="icon"
                                     title="Verwijderen"
+                                    className="hover:bg-transparent focus-visible:ring-0 text-rose-600 hover:text-rose-700 transition-transform hover:scale-110"
                                     onClick={async () => {
                                       if (onDeleteCustomer) return onDeleteCustomer(c);
                                       const { toast } = await import("sonner");
