@@ -41,23 +41,9 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-  // Basisvorm
-  "flex w-full items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm transition-colors outline-none",
-  // ✅ Zelfde kleur als dropdowns (licht vlak)
-  "bg-white border-neutral-200 text-neutral-800 shadow-sm",
-  // Hover subtiel
-  "hover:bg-neutral-50 hover:border-neutral-300",
-  // Focusring netjes
-  "focus-visible:ring-[3px] focus-visible:ring-blue-500/30 focus-visible:border-blue-500",
-  // Disabled
-  "disabled:cursor-not-allowed disabled:opacity-50",
-  // Dark mode: vlak donker
-  "dark:bg-neutral-900 dark:text-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800",
-  // SVG-icon kleur
-  "[&_svg:not([class*='text-'])]:text-neutral-500",
-  className
-)}
-
+        "border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-full items-center justify-between gap-2 rounded-md border bg-input-background px-3 py-2 text-sm whitespace-nowrap transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        className,
+      )}
       {...props}
     >
       {children}
@@ -67,7 +53,6 @@ function SelectTrigger({
     </SelectPrimitive.Trigger>
   );
 }
-
 
 function SelectContent({
   className,
@@ -80,30 +65,29 @@ function SelectContent({
       <SelectPrimitive.Content
         data-slot="select-content"
         className={cn(
-          // Layout & sizing
-          "relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] overflow-x-hidden overflow-y-auto",
-          // ✅ Opaque + thematisch (light/dark)
-          "rounded-md border border-neutral-200 bg-white text-neutral-800 shadow-lg backdrop-blur-none",
-          "dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100",
-          // Animaties/positie
-          "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-          "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-          "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-          position === "popper" &&
-            "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
-          className
-        )}
+    "relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] overflow-x-hidden overflow-y-auto",
+    // Forceer licht thema, óók in dark:
+    "rounded-md border border-neutral-200 bg-white text-neutral-800 shadow-lg backdrop-blur-none",
+    "dark:!border-neutral-200 dark:!bg-white dark:!text-neutral-800",
+    // anims...
+    "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+    "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+    "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+    position === "popper" &&
+      "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
+    className
+  )}
         position={position}
         {...props}
       >
         <SelectScrollUpButton />
         <SelectPrimitive.Viewport
-          className={cn(
-            // Binnenzijde ook thematisch
-            "p-1 bg-white dark:bg-neutral-900",
-            position === "popper" &&
-              "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1"
-          )}
+    className={cn(
+      "p-1 bg-white",
+      "dark:!bg-white", // forceer licht binnenzijde
+      position === "popper" &&
+        "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1"
+    )}
         >
           {children}
         </SelectPrimitive.Viewport>
@@ -112,8 +96,6 @@ function SelectContent({
     </SelectPrimitive.Portal>
   );
 }
-
-
 
 
 function SelectLabel({
