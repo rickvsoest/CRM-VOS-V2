@@ -22,7 +22,7 @@ export function Sidebar({ currentPage, onNavigate, userRole, userName, onLogout 
   const initials = userName?.trim()?.[0]?.toUpperCase() ?? "U";
 
   return (
-    <aside className="fixed inset-y-0 left-0 w-60 bg-white border-r flex flex-col"
+    <aside className="h-screen w-60 bg-white border-r flex flex-col sticky top-0"
            style={{ borderColor: "var(--border)" }}>
       {/* Logo / brand */}
       <div className="h-16 px-4 flex items-center">
