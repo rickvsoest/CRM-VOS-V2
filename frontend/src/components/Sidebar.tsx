@@ -15,8 +15,8 @@ export function Sidebar({ currentPage, onNavigate, userRole, userName, onLogout 
     { id: "customers",  label: "Klanten",       icon: Users,         roles: ["BEHEERDER", "MEDEWERKER"] },
     { id: "tasks",      label: "Taken",         icon: SquareCheckBig, roles: ["BEHEERDER", "MEDEWERKER"] },
     { id: "notes",      label: "Notities",      icon: NotebookPen , roles: ["BEHEERDER", "MEDEWERKER"] },
-    { id: "usermanagement",  label: "Gebruikersbeheer",    icon: UserPen,      roles: ["BEHEERDER"] },
-    { id: "rolemanagement",  label: "Rollenbeheer",    icon: Shield,      roles: ["BEHEERDER"] },
+    { id: "gebruikersbeheer",  label: "Gebruikersbeheer",    icon: UserPen,      roles: ["BEHEERDER"] },
+    { id: "rollenbeheer",  label: "Rollenbeheer",    icon: Shield,      roles: ["BEHEERDER"] },
     { id: "documents",  label: "Documenten",    icon: FileText,      roles: ["BEHEERDER", "MEDEWERKER", "KLANT"] },
     { id: "settings",   label: "Instellingen",  icon: Settings,      roles: ["BEHEERDER", "MEDEWERKER", "KLANT"] },
   ];
