@@ -807,9 +807,20 @@ export function Dashboard({ userName, onNavigate, currentUserId }: DashboardProp
             setIsDocumentPreviewOpen(false);
             setSelectedDocument(null);
           }}
-          document={selectedDocument}
+        filename={
+          typeof selectedDocument === 'string'
+            ? selectedDocument
+            : (
+                selectedDocument?.filename ??
+                selectedDocument?.name ??
+                selectedDocument?.originalName ??
+                ''
+              )
+            }
+          canDownload={true}
         />
       )}
+
 
       {/* Note Detail Modal */}
       {selectedNote && (
