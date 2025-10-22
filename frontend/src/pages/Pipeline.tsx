@@ -1,6 +1,6 @@
-﻿import { useState, useEffect as React_useEffect } from 'react';
+﻿import { useState } from 'react';
 import * as React from 'react';
-import { Search, Calendar, User, Plus, Settings, UserPlus, Trash2 } from 'lucide-react';
+import { Search, Calendar, Plus, Settings, UserPlus, Trash2 } from 'lucide-react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Input } from '../components/ui/input';
@@ -9,8 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Badge } from '../components/ui/badge';
 import { AddExistingCustomerModal } from '../components/modals/AddExistingCustomerModal';
 import { mockCustomers, defaultPipelineStages, getCustomerFullName, formatDate } from '../lib/mockData';
-import type { Customer } from "../lib/mockData";
-import type { PipelineStage } from "../lib/mockData";
+import type { Customer } from '../lib/mockData';
+import type { PipelineStage } from '../lib/mockData';
 
 interface PipelineProps {
   onNavigate: (page: string, id?: string) => void;
@@ -26,14 +26,14 @@ interface DragItem {
   fromStage: string;
 }
 
-export function Pipeline({ onNavigate, onOpenNewCustomer, onOpenPipelineSettings, onCustomerAdded }: PipelineProps) {
+export function Pipeline({ onNavigate, onOpenNewCustomer, onOpenPipelineSettings }: PipelineProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
-  const [pipelineStages, setPipelineStages] = useState<PipelineStage[]>(defaultPipelineStages);
+  const [pipelineStages] = useState<PipelineStage[]>(defaultPipelineStages);
   const [isAddExistingModalOpen, setIsAddExistingModalOpen] = useState(false);
   const [selectedStageForAdd, setSelectedStageForAdd] = useState<string>('NIEUW');
-  const [allCustomers, setAllCustomers] = useState<Customer[]>(mockCustomers);
+  const [allCustomers] = useState<Customer[]>(mockCustomers);
 
   // Register global callback for adding customers
   React.useEffect(() => {
@@ -71,7 +71,7 @@ export function Pipeline({ onNavigate, onOpenNewCustomer, onOpenPipelineSettings
   };
 
   const handleAddExistingCustomer = (customerId: string, stage: string) => {
-    const customer = allCustomers.find(c => c.id === customerId);
+    const customer = allCustomers.find((c) => c.id === customerId);
     if (customer) {
       const updatedCustomer = {
         ...customer,
@@ -79,9 +79,9 @@ export function Pipeline({ onNavigate, onOpenNewCustomer, onOpenPipelineSettings
         lastActivity: new Date().toISOString(),
       };
       setCustomers((prev) => {
-        const exists = prev.find(c => c.id === customerId);
+        const exists = prev.find((c) => c.id === customerId);
         if (exists) {
-          return prev.map(c => c.id === customerId ? updatedCustomer : c);
+          return prev.map((c) => (c.id === customerId ? updatedCustomer : c));
         }
         return [...prev, updatedCustomer];
       });
@@ -91,16 +91,12 @@ export function Pipeline({ onNavigate, onOpenNewCustomer, onOpenPipelineSettings
   const handleDeleteCustomer = (customerId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (confirm('Weet je zeker dat je deze klant uit de pipeline wilt verwijderen?')) {
-      setCustomers((prev) => prev.filter(c => c.id !== customerId));
+      setCustomers((prev) => prev.filter((c) => c.id !== customerId));
       import('sonner').then(({ toast }) => {
         toast.success('Klant verwijderd uit pipeline!');
       });
     }
   };
-
-
-
-
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -109,16 +105,10 @@ export function Pipeline({ onNavigate, onOpenNewCustomer, onOpenPipelineSettings
         <div className="flex items-start justify-between">
           <div>
             <h1 className="mb-2">Pipeline</h1>
-            <p style={{ color: 'var(--text-secondary)' }}>
-              Overzicht van klanten in verschillende verkoopfases
-            </p>
+            <p style={{ color: 'var(--text-secondary)' }}>Overzicht van klanten in verschillende verkoopfases</p>
           </div>
           <div className="flex gap-3">
-            <Button
-              onClick={onOpenPipelineSettings}
-              variant="outline"
-              className="rounded-xl hover:scale-105 transition-transform"
-            >
+            <Button onClick={onOpenPipelineSettings} variant="outline" className="rounded-xl hover:scale-105 transition-transform">
               <Settings className="h-4 w-4 mr-2" />
               Statussen beheren
             </Button>
@@ -144,43 +134,37 @@ export function Pipeline({ onNavigate, onOpenNewCustomer, onOpenPipelineSettings
           </div>
         </div>
 
-      {/* Search and Filters */}
-      <div
-        className="p-6 rounded-xl shadow-sm space-y-4"
-        style={{ backgroundColor: 'var(--panel)' }}
-      >
-        <div className="flex flex-wrap gap-4">
-          <div className="flex-1 min-w-64 relative">
-            <Search
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4"
-              style={{ color: 'var(--text-secondary)' }}
-            />
-            <Input
-              placeholder="Zoek op naam of e-mail..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+        {/* Search and Filters */}
+        <div className="p-6 rounded-xl shadow-sm space-y-4" style={{ backgroundColor: 'var(--panel)' }}>
+          <div className="flex flex-wrap gap-4">
+            <div className="flex-1 min-w-64 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
+              <Input
+                placeholder="Zoek op naam of e-mail..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Alle statussen" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle statussen</SelectItem>
+                {defaultPipelineStages.map((stage) => (
+                  <SelectItem key={stage.id} value={stage.name}>
+                    {stage.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Alle statussen" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Alle statussen</SelectItem>
-              {pipelineStages.map((stage) => (
-                <SelectItem key={stage.id} value={stage.name}>
-                  {stage.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
-      </div>
 
         {/* Kanban Board */}
         <div className="flex gap-4 overflow-x-auto pb-4">
-          {pipelineStages
+          {defaultPipelineStages
             .sort((a, b) => a.order - b.order)
             .map((stage) => (
               <PipelineColumn
@@ -195,14 +179,14 @@ export function Pipeline({ onNavigate, onOpenNewCustomer, onOpenPipelineSettings
             ))}
         </div>
 
-      {/* Add Existing Customer Modal */}
-      <AddExistingCustomerModal
-        isOpen={isAddExistingModalOpen}
-        onClose={() => setIsAddExistingModalOpen(false)}
-        onAdd={handleAddExistingCustomer}
-        availableCustomers={allCustomers}
-        initialStage={selectedStageForAdd}
-      />
+        {/* Add Existing Customer Modal */}
+        <AddExistingCustomerModal
+          isOpen={isAddExistingModalOpen}
+          onClose={() => setIsAddExistingModalOpen(false)}
+          onAdd={handleAddExistingCustomer}
+          availableCustomers={allCustomers}
+          initialStage={selectedStageForAdd}
+        />
       </div>
     </DndProvider>
   );
@@ -218,38 +202,43 @@ interface PipelineColumnProps {
 }
 
 function PipelineColumn({ stage, customers, onNavigate, onMoveCustomer, onAddCustomer, onDeleteCustomer }: PipelineColumnProps) {
+  const [dropFlash, setDropFlash] = React.useState(false);
+
   const [{ isOver }, drop] = useDrop<DragItem, void, { isOver: boolean }>({
     accept: DRAG_TYPE,
     drop: (item) => {
       if (item.fromStage !== stage.name) {
         onMoveCustomer(item.customerId, stage.name);
+        // korte flash na droppen
+        setDropFlash(true);
+        setTimeout(() => setDropFlash(false), 250);
       }
     },
     collect: (monitor) => ({
-      isOver: monitor.isOver(),
+      // shallow om alleen de kolom zelf te highlighten
+      isOver: monitor.isOver({ shallow: true }),
     }),
   });
 
   const columnRef = React.useRef<HTMLDivElement>(null);
   drop(columnRef);
 
-return (
+  return (
     <div
-      ref={columnRef}   // 👈 i.p.v. ref={drop}
-      className="flex-shrink-0 w-80 rounded-xl transition-all"
+      ref={columnRef}
+      className="flex-shrink-0 w-80 rounded-xl transition-all duration-200"
       style={{
-        backgroundColor: 'var(--panel)',
-        border: isOver ? '2px solid var(--accent)' : '2px solid transparent',
+        backgroundColor: isOver ? 'var(--accent)10' as any : 'var(--panel)',
+        border: isOver ? '2px dashed var(--accent)' : '2px solid transparent',
+        boxShadow: dropFlash ? '0 0 0 4px rgba(59,130,246,0.25)' : 'none',
+        transform: dropFlash ? 'scale(1.01)' : 'scale(1.0)',
       }}
     >
       {/* Column Header */}
       <div className="p-4 border-b" style={{ borderColor: 'var(--border)' }}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <div
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: stage.color }}
-            />
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: stage.color }} />
             <h3 className="text-sm">{stage.label}</h3>
           </div>
           <div className="flex items-center gap-2">
@@ -289,10 +278,10 @@ return (
 
         {customers.length === 0 && (
           <div
-            className="p-8 text-center text-sm rounded-xl"
+            className="p-8 text-center text-sm rounded-xl transition-all duration-200"
             style={{
-              backgroundColor: isOver ? 'var(--accent)' + '10' : 'var(--background)',
-              color: 'var(--text-secondary)',
+              backgroundColor: isOver ? 'var(--accent)12' as any : 'var(--background)',
+              color: isOver ? 'var(--accent)' : 'var(--text-secondary)',
               border: isOver ? '2px dashed var(--accent)' : '2px dashed transparent',
             }}
           >
@@ -320,25 +309,26 @@ function CustomerCard({ customer, stage, onNavigate, onDeleteCustomer }: Custome
     }),
   });
 
-  // 👇 eigen ref + connector toepassen
   const cardRef = React.useRef<HTMLDivElement>(null);
   drag(cardRef);
 
   return (
     <div
-      ref={cardRef}   // 👈 i.p.v. ref={drag}
-      className="p-4 rounded-xl cursor-move hover:scale-105 transition-transform shadow-sm relative group"
+      ref={cardRef}
+      className="p-4 rounded-xl cursor-move hover:scale-105 transition-transform duration-200 shadow-sm relative group"
       style={{
         backgroundColor: 'var(--background)',
-        opacity: isDragging ? 0.5 : 1,
+        opacity: isDragging ? 0.6 : 1,
+        transform: isDragging ? 'scale(0.98)' : 'scale(1)',
         cursor: isDragging ? 'grabbing' : 'grab',
+        boxShadow: isDragging ? '0 6px 18px rgba(0,0,0,0.12)' : '0 2px 8px rgba(0,0,0,0.06)',
       }}
     >
       {/* Delete Button */}
       <button
         onClick={(e) => onDeleteCustomer(customer.id, e)}
         className="absolute top-2 right-2 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-        style={{ 
+        style={{
           backgroundColor: 'var(--error)' + '20',
           color: 'var(--error)',
         }}
@@ -348,8 +338,8 @@ function CustomerCard({ customer, stage, onNavigate, onDeleteCustomer }: Custome
       </button>
 
       {/* Customer Name */}
-      <h4 
-        className="mb-2 pr-8" 
+      <h4
+        className="mb-2 pr-8"
         style={{ color: 'var(--text-primary)' }}
         onClick={() => onNavigate('customer-detail', customer.id)}
       >
@@ -363,10 +353,8 @@ function CustomerCard({ customer, stage, onNavigate, onDeleteCustomer }: Custome
           variant="secondary"
           className="rounded-full mb-3"
           style={{
-            backgroundColor:
-              customer.type === 'PERSON' ? '#3B82F620' : '#10B98120',
-            color:
-              customer.type === 'PERSON' ? '#3B82F6' : '#10B981',
+            backgroundColor: customer.type === 'PERSON' ? '#3B82F620' : '#10B98120',
+            color: customer.type === 'PERSON' ? '#3B82F6' : '#10B981',
           }}
         >
           {customer.type === 'PERSON' ? 'Persoon' : 'Organisatie'}
@@ -375,17 +363,11 @@ function CustomerCard({ customer, stage, onNavigate, onDeleteCustomer }: Custome
         {/* Last Activity */}
         {customer.lastActivity && (
           <div className="flex items-center gap-2 text-xs">
-            <Calendar
-              className="h-3 w-3"
-              style={{ color: 'var(--text-secondary)' }}
-            />
-            <span style={{ color: 'var(--text-secondary)' }}>
-              {formatDate(customer.lastActivity)}
-            </span>
+            <Calendar className="h-3 w-3" style={{ color: 'var(--text-secondary)' }} />
+            <span style={{ color: 'var(--text-secondary)' }}>{formatDate(customer.lastActivity)}</span>
           </div>
         )}
       </div>
     </div>
   );
 }
-
