@@ -326,54 +326,79 @@ export default function Customers({
         {/* Tabs met aantallen */}
 {/* Tabs */}
 <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ActiveTab)}>
-  <TabsList className="flex w-full gap-2 rounded-lg bg-transparent">
-  {/* Alle */}
+  <TabsList
+  className="flex w-full max-w-md items-center justify-between rounded-full bg-neutral-100 p-1"
+>
   <TabsTrigger
     value="all"
     className={cn(
-      "px-4 py-2 text-sm rounded-md transition-colors",
-      // 🔹 Basisstijl gelijk aan SelectTrigger
-      "bg-neutral-50 text-neutral-700 hover:bg-neutral-100 focus:bg-neutral-100",
-      "dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800",
-      "border-none shadow-none",
-      "focus-visible:ring-[2px] focus-visible:ring-blue-500/20",
-      // 🔹 Actieve tab = accentkleur, witte tekst
-      "data-[state=active]:bg-[var(--accent)] data-[state=active]:text-white"
+      "flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-full transition-all",
+      // Niet-actief
+      "text-neutral-600 hover:text-neutral-800",
+      // Actief
+      "data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm"
     )}
   >
-    Alle
+    Alle <span className="text-neutral-400 text-xs">(8)</span>
   </TabsTrigger>
 
-  {/* Organisaties */}
   <TabsTrigger
     value="organizations"
     className={cn(
-      "px-4 py-2 text-sm rounded-md transition-colors",
-      "bg-neutral-50 text-neutral-700 hover:bg-neutral-100 focus:bg-neutral-100",
-      "dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800",
-      "border-none shadow-none",
-      "focus-visible:ring-[2px] focus-visible:ring-blue-500/20",
-      "data-[state=active]:bg-[var(--accent)] data-[state=active]:text-white"
+      "flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-full transition-all",
+      "text-neutral-600 hover:text-neutral-800",
+      "data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm"
     )}
   >
-    Organisaties
+    <span className="flex items-center gap-1">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-4 w-4 opacity-60"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M3 21v-6a9 9 0 0118 0v6"
+        />
+      </svg>
+      Organisaties
+    </span>
+    <span className="text-neutral-400 text-xs">(4)</span>
   </TabsTrigger>
 
-  {/* Particulieren */}
   <TabsTrigger
     value="persons"
     className={cn(
-      "px-4 py-2 text-sm rounded-md transition-colors",
-      "bg-neutral-50 text-neutral-700 hover:bg-neutral-100 focus:bg-neutral-100",
-      "dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800",
-      "border-none shadow-none",
-      "focus-visible:ring-[2px] focus-visible:ring-blue-500/20",
-      "data-[state=active]:bg-[var(--accent)] data-[state=active]:text-white"
+      "flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-full transition-all",
+      "text-neutral-600 hover:text-neutral-800",
+      "data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm"
     )}
   >
-    Particulieren
+    <span className="flex items-center gap-1">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-4 w-4 opacity-60"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M5.121 17.804A9 9 0 0112 15a9 9 0 016.879 2.804M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+        />
+      </svg>
+      Particulieren
+    </span>
+    <span className="text-neutral-400 text-xs">(4)</span>
   </TabsTrigger>
 </TabsList>
+
 
           <TabsContent value={activeTab} className="mt-4">
             {/* Filters + CSV */}
