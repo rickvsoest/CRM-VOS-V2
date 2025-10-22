@@ -1,4 +1,4 @@
-import { Home, Users, FileText, Settings, LogOut, ClipboardList } from "lucide-react";
+import { Home, Users, FileText, Settings, LogOut, ClipboardList, TrendingUp, SquareCheckBig, NotebookPen, UserPen, Shield} from "lucide-react";
 
 interface SidebarProps {
   currentPage: string;
@@ -11,10 +11,13 @@ interface SidebarProps {
 export function Sidebar({ currentPage, onNavigate, userRole, userName, onLogout }: SidebarProps) {
   const links = [
     { id: "dashboard",  label: "Dashboard",     icon: Home,          roles: ["BEHEERDER", "MEDEWERKER"] },
-    { id: "pipeline",   label: "Pipeline",      icon: ClipboardList, roles: ["BEHEERDER", "MEDEWERKER"] },
+    { id: "pipeline",   label: "Pipeline",      icon: TrendingUp,    roles: ["BEHEERDER", "MEDEWERKER"] },
     { id: "customers",  label: "Klanten",       icon: Users,         roles: ["BEHEERDER", "MEDEWERKER"] },
+    { id: "tasks",      label: "Taken",         icon: SquareCheckBig, roles: ["BEHEERDER", "MEDEWERKER"] },
+    { id: "notes",      label: "Notities",      icon: NotebookPen , roles: ["BEHEERDER", "MEDEWERKER"] },
+    { id: "usermanagement",  label: "Gebruikersbeheer",    icon: UserPen,      roles: ["BEHEERDER"] },
+    { id: "rolemanagement",  label: "Rollenbeheer",    icon: Shield,      roles: ["BEHEERDER"] },
     { id: "documents",  label: "Documenten",    icon: FileText,      roles: ["BEHEERDER", "MEDEWERKER", "KLANT"] },
-    { id: "tasks",      label: "Taken",         icon: ClipboardList, roles: ["BEHEERDER", "MEDEWERKER"] },
     { id: "settings",   label: "Instellingen",  icon: Settings,      roles: ["BEHEERDER", "MEDEWERKER", "KLANT"] },
   ];
   const visibleLinks = links.filter((l) => l.roles.includes(userRole));
