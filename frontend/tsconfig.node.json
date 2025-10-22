@@ -4,6 +4,7 @@
     "skipLibCheck": true,
     "module": "ESNext",
     "resolveJsonModule": true,
+    "types": ["node"],
 
     /* Bundler mode */
     "moduleResolution": "bundler",
