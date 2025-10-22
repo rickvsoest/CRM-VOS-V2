@@ -1,5 +1,6 @@
 ﻿// frontend/src/pages/Customers.tsx
 import { useEffect, useMemo, useState } from "react";
+import { cn } from "../components/ui/utils";
 import * as React from "react";
 import {
   Search,
@@ -325,55 +326,55 @@ export default function Customers({
         {/* Tabs met aantallen */}
 {/* Tabs */}
 <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ActiveTab)}>
-  <TabsList className="flex w-full gap-2 rounded-xl p-1 bg-transparent">
-    {/* Alle */}
-    <TabsTrigger
-      value="all"
-      className="
-        rounded-xl px-4 py-2 text-sm transition
-        border border-neutral-200 bg-white text-neutral-700 shadow-sm
-        hover:bg-neutral-50 hover:shadow
-        data-[state=active]:bg-[var(--accent)] data-[state=active]:text-white data-[state=active]:border-[var(--accent)]
-        data-[state=active]:shadow
-        dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800
-        dark:data-[state=active]:bg-[var(--accent)] dark:data-[state=active]:text-white dark:data-[state=active]:border-[var(--accent)]
-      "
-    >
-      Alle ({counts.all})
-    </TabsTrigger>
+  <TabsList className="flex w-full gap-2 rounded-lg bg-transparent">
+  {/* Alle */}
+  <TabsTrigger
+    value="all"
+    className={cn(
+      "px-4 py-2 text-sm rounded-md transition-colors",
+      // 🔹 Basisstijl gelijk aan SelectTrigger
+      "bg-neutral-50 text-neutral-700 hover:bg-neutral-100 focus:bg-neutral-100",
+      "dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800",
+      "border-none shadow-none",
+      "focus-visible:ring-[2px] focus-visible:ring-blue-500/20",
+      // 🔹 Actieve tab = accentkleur, witte tekst
+      "data-[state=active]:bg-[var(--accent)] data-[state=active]:text-white"
+    )}
+  >
+    Alle
+  </TabsTrigger>
 
-    {/* Organisaties */}
-    <TabsTrigger
-      value="organizations"
-      className="
-        rounded-xl px-4 py-2 text-sm transition
-        border border-neutral-200 bg-white text-neutral-700 shadow-sm
-        hover:bg-neutral-50 hover:shadow
-        data-[state=active]:bg-[var(--accent)] data-[state=active]:text-white data-[state=active]:border-[var(--accent)]
-        data-[state=active]:shadow
-        dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800
-        dark:data-[state=active]:bg-[var(--accent)] dark:data-[state=active]:text-white dark:data-[state=active]:border-[var(--accent)]
-      "
-    >
-      Organisaties ({counts.org})
-    </TabsTrigger>
+  {/* Organisaties */}
+  <TabsTrigger
+    value="organizations"
+    className={cn(
+      "px-4 py-2 text-sm rounded-md transition-colors",
+      "bg-neutral-50 text-neutral-700 hover:bg-neutral-100 focus:bg-neutral-100",
+      "dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800",
+      "border-none shadow-none",
+      "focus-visible:ring-[2px] focus-visible:ring-blue-500/20",
+      "data-[state=active]:bg-[var(--accent)] data-[state=active]:text-white"
+    )}
+  >
+    Organisaties
+  </TabsTrigger>
 
-    {/* Particulieren */}
-    <TabsTrigger
-      value="persons"
-      className="
-        rounded-xl px-4 py-2 text-sm transition
-        border border-neutral-200 bg-white text-neutral-700 shadow-sm
-        hover:bg-neutral-50 hover:shadow
-        data-[state=active]:bg-[var(--accent)] data-[state=active]:text-white data-[state=active]:border-[var(--accent)]
-        data-[state=active]:shadow
-        dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800
-        dark:data-[state=active]:bg-[var(--accent)] dark:data-[state=active]:text-white dark:data-[state=active]:border-[var(--accent)]
-      "
-    >
-      Particulieren ({counts.per})
-    </TabsTrigger>
-  </TabsList>
+  {/* Particulieren */}
+  <TabsTrigger
+    value="persons"
+    className={cn(
+      "px-4 py-2 text-sm rounded-md transition-colors",
+      "bg-neutral-50 text-neutral-700 hover:bg-neutral-100 focus:bg-neutral-100",
+      "dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800",
+      "border-none shadow-none",
+      "focus-visible:ring-[2px] focus-visible:ring-blue-500/20",
+      "data-[state=active]:bg-[var(--accent)] data-[state=active]:text-white"
+    )}
+  >
+    Particulieren
+  </TabsTrigger>
+</TabsList>
+
           <TabsContent value={activeTab} className="mt-4">
             {/* Filters + CSV */}
             <div className="flex flex-col gap-3">
