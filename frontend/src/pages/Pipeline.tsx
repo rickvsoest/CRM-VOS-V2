@@ -230,11 +230,12 @@ function PipelineColumn({ stage, customers, onNavigate, onMoveCustomer, onAddCus
     }),
   });
 
+  const columnRef = React.useRef<HTMLDivElement>(null);
+  drop(columnRef);
 
-
-  return (
+return (
     <div
-      ref={drop}
+      ref={columnRef}   // 👈 i.p.v. ref={drop}
       className="flex-shrink-0 w-80 rounded-xl transition-all"
       style={{
         backgroundColor: 'var(--panel)',
@@ -319,9 +320,13 @@ function CustomerCard({ customer, stage, onNavigate, onDeleteCustomer }: Custome
     }),
   });
 
+  // 👇 eigen ref + connector toepassen
+  const cardRef = React.useRef<HTMLDivElement>(null);
+  drag(cardRef);
+
   return (
     <div
-      ref={drag}
+      ref={cardRef}   // 👈 i.p.v. ref={drag}
       className="p-4 rounded-xl cursor-move hover:scale-105 transition-transform shadow-sm relative group"
       style={{
         backgroundColor: 'var(--background)',
