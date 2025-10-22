@@ -311,7 +311,7 @@ export default function Customers({
   }
 
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={600}>
       <div className="p-8 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -496,7 +496,13 @@ export default function Customers({
                                     <Mail className="h-4 w-4" />
                                   </Button>
                                 </TooltipTrigger>
-                                <TooltipContent>Uitnodigen</TooltipContent>
+                                <TooltipContent
+                                  side="bottom"
+                                  align="center"
+                                  sideOffset={6}
+                                  className="px-2 py-1 text-xs rounded-md shadow-sm"
+                                >
+                                  Uitnodigen</TooltipContent>
                               </Tooltip>
 
                               {/* Pipeline (groen) */}
@@ -512,7 +518,13 @@ export default function Customers({
                                     <TrendingUp className="h-4 w-4" />
                                   </Button>
                                 </TooltipTrigger>
-                                <TooltipContent>Toevoegen aan pipeline</TooltipContent>
+                                <TooltipContent
+                                  side="bottom"
+                                  align="center"
+                                  sideOffset={6}
+                                  className="px-2 py-1 text-xs rounded-md shadow-sm"                  
+                                >
+                                  Toevoegen aan pipeline</TooltipContent>
                               </Tooltip>
 
                               {/* Bewerken (kleur laten zoals is) */}
@@ -528,7 +540,13 @@ export default function Customers({
                                     <Pencil className="h-4 w-4" />
                                   </Button>
                                 </TooltipTrigger>
-                                <TooltipContent>Bewerken</TooltipContent>
+                                <TooltipContent
+                                  side="bottom"
+                                  align="center"
+                                  sideOffset={6}
+                                  className="px-2 py-1 text-xs rounded-md shadow-sm" 
+                                  >
+                                    Bewerken</TooltipContent>
                               </Tooltip>
 
                               {/* Verwijderen (rood) */}
@@ -550,7 +568,13 @@ export default function Customers({
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
                                 </TooltipTrigger>
-                                <TooltipContent>Verwijderen</TooltipContent>
+                                <TooltipContent
+                                  side="bottom"
+                                  align="center"
+                                  sideOffset={6}
+                                  className="px-2 py-1 text-xs rounded-md shadow-sm" 
+                                  >
+                                    Verwijderen</TooltipContent>
                               </Tooltip>
                             </div>
                           </TableCell>
