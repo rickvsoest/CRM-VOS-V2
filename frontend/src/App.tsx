@@ -42,6 +42,7 @@ type UserRole = "BEHEERDER" | "MEDEWERKER" | "KLANT";
 interface CurrentUser {
   id: string;
   name: string;
+  email: string;
   role: UserRole;
 }
 export interface PipelineStage {
@@ -70,6 +71,7 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<CurrentUser>({
     id: "me",
     name: "Gebruiker",
+    email: "gebruiker@example.com",
     role: "BEHEERDER",
   });
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
@@ -214,7 +216,7 @@ export default function App() {
                 setNewCustomerInitialStage("NIEUW");
                 setIsNewCustomerModalOpen(true);
               }}
-              onAddToPipeline={(customer: CustomerLite) => {
+              onAddToPipeline={(customer) => {
                 setNotifications((ns) => [
                   {
                     id: Date.now().toString(),
